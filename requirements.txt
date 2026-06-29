@@ -1,4 +1,7 @@
 streamlit
 pandas
-openpyxl
+numpy
+scikit-learn
+xgboost
 joblib
+openpyxl
