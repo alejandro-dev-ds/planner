@@ -172,13 +172,7 @@ if "resultado" in st.session_state:
 
     st.success("✅ Predicción completada")
 
-    # KPIs
-    total_horas = resultado["horas_predichas"].sum()
-    num_proyectos = resultado["ACRÓNIMO"].nunique()
-
-    m1, m2 = st.columns(2)
-    m1.metric("⏱️ Total horas", f"{total_horas:,.0f}")
-    m2.metric("📦 Nº proyectos", num_proyectos)
+   
 
     # ✅ Filtro SIN romper app
     proyectos = st.multiselect(
@@ -192,6 +186,15 @@ if "resultado" in st.session_state:
         resultado_filtrado = resultado
 
     # Gráfico
+
+     # KPIs
+    total_horas = resultado["horas_predichas"].sum()
+    num_proyectos = resultado["ACRÓNIMO"].nunique()
+
+    m1, m2 = st.columns(2)
+    m1.metric("⏱️ Total horas", f"{total_horas:,.0f}")
+    m2.metric("📦 Nº proyectos", num_proyectos)
+    
     st.subheader("📈 Horas por tarea")
 
     grafico = resultado_filtrado.groupby("PLANIFICACIÓN")["horas_predichas"].sum()
