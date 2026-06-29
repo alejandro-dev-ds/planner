@@ -144,27 +144,70 @@ tareas_dict = {
 }
 
 
-if archivo:
+
+col1, col2 = st.columns([1, 2])
+
+with col1:
+    st.header("📂 Input")
+
+    archivo = st.file_uploader("Sube tu archivo Excel", type=["xlsx", "xls"])
+
+    ejecutar = False
+
+    if archivo:
+        if st.button("🚀 Ejecutar predicción", use_container_width=True):
+            ejecutar = True
+
+with col2:
+    st.header("📊 Resultados")
+
+# -------------------------
+# EJECUCIÓN
+# -------------------------
+
+if archivo and ejecutar:
+
     df = pd.read_excel(archivo)
 
-    st.subheader("Datos cargados")
-    st.dataframe(df)
+    with st.spinner("Calculando predicciones..."):
+        resultado = predecir_por_tareas(df, tareas_dict, modelo)
 
-    df_base = df.copy()
+    st.success("✅ Predicción completada")
 
-    if st.button("Predecir"):
+    # KPIs
+    total_horas = resultado["horas_predichas"].sum()
+    num_proyectos = resultado["ACRÓNIMO"].nunique()
 
-        resultado = predecir_por_tareas(df_base, tareas_dict, modelo)
+    m1, m2 = st.columns(2)
+    m1.metric("⏱️ Total horas", f"{total_horas:,.0f}")
+    m2.metric("📦 Nº proyectos", num_proyectos)
 
-        st.subheader("Resultado detallado")
-        st.dataframe(resultado)
+    # Filtro opcional
+    proyectos = st.multiselect(
+        "Filtrar por proyecto",
+        options=resultado["ACRÓNIMO"].unique()
+    )
 
-        # ✅ Excel descargable
-        excel_file = convertir_a_excel(resultado)
+    if proyectos:
+        resultado = resultado[resultado["ACRÓNIMO"].isin(proyectos)]
 
-        st.download_button(
-            label="📥 Descargar resultados en Excel",
-            data=excel_file,
-            file_name="prediccion_horas.xlsx",
-            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-        )
+    # Gráfico
+    st.subheader("📈 Horas por tarea")
+
+    grafico = resultado.groupby("PLANIFICACIÓN")["horas_predichas"].sum()
+    st.bar_chart(grafico)
+
+    # Tabla
+    st.subheader("📋 Detalle")
+    st.dataframe(resultado, use_container_width=True, hide_index=True)
+
+    # Excel descarga
+    excel_file = convertir_a_excel(resultado)
+
+    st.download_button(
+        label="📥 Descargar resultados en Excel",
+        data=excel_file,
+        file_name="prediccion_horas.xlsx",
+        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        use_container_width=True
+    )
