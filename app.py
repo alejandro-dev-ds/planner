@@ -145,24 +145,30 @@ st.header("📂 Input")
 
 archivo = st.file_uploader("Sube tu archivo Excel", type=["xlsx", "xls"])
 
-ejecutar = False
+# -------------------------
+# EJECUCIÓN CONTROLADA
+# -------------------------
 
 if archivo:
+
     if st.button("🚀 Ejecutar predicción", use_container_width=True):
-        ejecutar = True
 
+        df = pd.read_excel(archivo)
+
+        with st.spinner("Calculando predicciones..."):
+            resultado = predecir_por_tareas(df, tareas_dict, modelo)
+
+        # ✅ Guardar resultado en memoria (CLAVE)
+        st.session_state["resultado"] = resultado
 
 
 # -------------------------
-# EJECUCIÓN
+# MOSTRAR RESULTADOS (persistentes)
 # -------------------------
 
-if archivo and ejecutar:
+if "resultado" in st.session_state:
 
-    df = pd.read_excel(archivo)
-
-    with st.spinner("Calculando predicciones..."):
-        resultado = predecir_por_tareas(df, tareas_dict, modelo)
+    resultado = st.session_state["resultado"]
 
     st.success("✅ Predicción completada")
 
@@ -174,27 +180,29 @@ if archivo and ejecutar:
     m1.metric("⏱️ Total horas", f"{total_horas:,.0f}")
     m2.metric("📦 Nº proyectos", num_proyectos)
 
-    # Filtro opcional
+    # ✅ Filtro SIN romper app
     proyectos = st.multiselect(
         "Filtrar por proyecto",
         options=resultado["ACRÓNIMO"].unique()
     )
 
     if proyectos:
-        resultado = resultado[resultado["ACRÓNIMO"].isin(proyectos)]
+        resultado_filtrado = resultado[resultado["ACRÓNIMO"].isin(proyectos)]
+    else:
+        resultado_filtrado = resultado
 
     # Gráfico
     st.subheader("📈 Horas por tarea")
 
-    grafico = resultado.groupby("PLANIFICACIÓN")["horas_predichas"].sum()
+    grafico = resultado_filtrado.groupby("PLANIFICACIÓN")["horas_predichas"].sum()
     st.bar_chart(grafico)
 
     # Tabla
     st.subheader("📋 Detalle")
-    st.dataframe(resultado, use_container_width=True, hide_index=True)
+    st.dataframe(resultado_filtrado, use_container_width=True, hide_index=True)
 
     # Excel descarga
-    excel_file = convertir_a_excel(resultado)
+    excel_file = convertir_a_excel(resultado_filtrado)
 
     st.download_button(
         label="📥 Descargar resultados en Excel",
