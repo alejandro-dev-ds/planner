@@ -5,9 +5,6 @@ import joblib
 
 st.title("Planner XGBoost")
 
-archivo = st.file_uploader("Sube tu archivo excel",type=["xlsx","xls"])
-
-
 def predecir_por_tareas(df_proyecto_base, tareas_dict, modelo_cargado):
 
     df_proyecto_base = df_proyecto_base.copy()
