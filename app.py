@@ -188,8 +188,8 @@ if "resultado" in st.session_state:
     # Gráfico
 
      # KPIs
-    total_horas = resultado["horas_predichas"].sum()
-    num_proyectos = resultado["ACRÓNIMO"].nunique()
+    total_horas = resultado_filtrado["horas_predichas"].sum()
+    num_proyectos = resultado_filtrado["ACRÓNIMO"].nunique()
 
     m1, m2 = st.columns(2)
     m1.metric("⏱️ Total horas", f"{total_horas:,.0f}")
