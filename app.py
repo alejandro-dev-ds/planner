@@ -141,22 +141,17 @@ tareas_dict = {
 }
 
 
+st.header("📂 Input")
 
-col1, col2 = st.columns([1, 2])
+archivo = st.file_uploader("Sube tu archivo Excel", type=["xlsx", "xls"])
 
-with col1:
-    st.header("📂 Input")
+ejecutar = False
 
-    archivo = st.file_uploader("Sube tu archivo Excel", type=["xlsx", "xls"])
+if archivo:
+    if st.button("🚀 Ejecutar predicción", use_container_width=True):
+        ejecutar = True
 
-    ejecutar = False
 
-    if archivo:
-        if st.button("🚀 Ejecutar predicción", use_container_width=True):
-            ejecutar = True
-
-with col2:
-    st.header("📊 Resultados")
 
 # -------------------------
 # EJECUCIÓN
