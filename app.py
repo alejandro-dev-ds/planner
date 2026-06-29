@@ -12,8 +12,10 @@ def predecir_por_tareas(df_proyecto_base, tareas_dict, modelo_cargado):
 
     df_proyecto_base = df_proyecto_base.copy()
 
-    # ID para cada fila original
-    df_proyecto_base["ID_PROYECTO"] = range(len(df_proyecto_base))
+
+    if "ACRÓNIMO" not in df_proyecto_base.columns:
+        st.error("El Excel debe contener la columna 'ACRÓNIMO'")
+        return pd.DataFrame()
 
     filas = []
 
@@ -39,19 +41,17 @@ def predecir_por_tareas(df_proyecto_base, tareas_dict, modelo_cargado):
     # Evitar negativos
     df_input["horas_predichas"] = df_input["horas_predichas"].clip(lower=0)
 
-    # Resultado detallado (IMPORTANTE → muchas filas)
     df_resultado = df_input[
-        ["ID_PROYECTO", "PLANIFICACIÓN", "cat_boq", "horas_predichas"]
+        ["ACRÓNIMO", "PLANIFICACIÓN", "cat_boq", "horas_predichas"]
     ].copy()
 
-    # Ordenar dentro de cada proyecto
     df_resultado = df_resultado.sort_values(
-        ["ID_PROYECTO", "horas_predichas"],
+        ["ACRÓNIMO", "horas_predichas"],
         ascending=[True, False]
     )
 
     return df_resultado
-
+    
 def convertir_a_excel(df):
     output = BytesIO()
     with pd.ExcelWriter(output, engine='openpyxl') as writer:
