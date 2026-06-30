@@ -29,11 +29,25 @@ def predecir_por_tareas(df_proyecto_base, tareas_dict, modelo_cargado):
     df_input["horas_predichas"] = horas
 
     # Regla negocio
-    condicion = (
+    condicion_1 = (
         (df_input["FAMILIA"] == "SKID") &
         (df_input["cat_boq"] == "BCF Service - Panelling")
     )
-    df_input.loc[condicion, "horas_predichas"] = 0
+    df_input.loc[condicion_1, "horas_predichas"] = 0
+
+    trabajos_mt = [
+        "TRANSFORMADOR",
+        "TRABAJOS DE MEDIA TENSION",
+        "TRABAJOS DE BT EN MT",
+        "PRUEBAS DE MEDIA TENSION"
+    ]
+
+    condicion_2 = (
+        (df_input["TRANSFORMER"] == "NO") &
+        (df_input["PLANIFICACIÓN"].isin(trabajos_mt))
+    )
+
+    df_input.loc[condicion_2, "horas_predichas"] = 0
 
     # Evitar negativos
     df_input["horas_predichas"] = df_input["horas_predichas"].clip(lower=0)
