@@ -255,25 +255,50 @@ if archivo:
 
     df_base = df.copy()
 
+    if archivo:
+    df = pd.read_excel(archivo)
+
+    st.subheader("Datos cargados")
+    st.dataframe(df)
+
+    df_base = df.copy()
+
+    # Calcular predicción una sola vez y guardarla
+    if archivo:
+    df = pd.read_excel(archivo)
+
+    st.subheader("Datos cargados")
+    st.dataframe(df)
+
+    df_base = df.copy()
+
+    # Calcular predicción una sola vez y guardarla
     if st.button("Predecir"):
 
-    st.session_state["resultado"] = predecir_por_tareas(
-        df_base,
-        tareas_dict,
-        modelo,
-        df_modelos,
-        df_patrones
-    )
+        st.session_state["resultado"] = predecir_por_tareas(
+            df_base,
+            tareas_dict,
+            modelo,
+            df_modelos,
+            df_patrones
+        )
 
-
+    # Mostrar resultados si existen
     if "resultado" in st.session_state:
-    
-        resultado = st.session_state["resultado"]
-    
-        st.subheader("Resultado detallado")
-        st.dataframe(resultado)
 
-        if proyectos_seleccionados:
+        resultado = st.session_state["resultado"]
+
+        st.subheader("Visualización")
+
+        proyectos = sorted(resultado["ACRÓNIMO"].unique())
+
+        proyectos_seleccionados = st.multiselect(
+            "Selecciona los proyectos a visualizar",
+            proyectos,
+            default=proyectos[:1]
+        )
+
+        if len(proyectos_seleccionados) > 0:
 
             df_graf = resultado[
                 resultado["ACRÓNIMO"].isin(proyectos_seleccionados)
@@ -297,7 +322,41 @@ if archivo:
                 xaxis_tickangle=-45
             )
 
-            st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(
+                fig,
+                use_container_width=True
+            )
+
+            # Tabla resumen opcional
+            resumen = (
+                df_graf
+                .pivot_table(
+                    index="PLANIFICACIÓN",
+                    columns="ACRÓNIMO",
+                    values="horas_predichas",
+                    aggfunc="sum"
+                )
+                .fillna(0)
+            )
+
+            st.subheader("Comparativa por tarea")
+            st.dataframe(resumen)
+
+        else:
+            st.info("Seleccione al menos un proyecto para visualizar.")
+
+        st.subheader("Resultado detallado")
+        st.dataframe(resultado)
+
+        # Excel descargable
+        excel_file = convertir_a_excel(resultado)
+
+        st.download_button(
+            label="📥 Descargar resultados en Excel",
+            data=excel_file,
+            file_name="prediccion_horas.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
 
         st.subheader("Resultado detallado")
         st.dataframe(resultado)
