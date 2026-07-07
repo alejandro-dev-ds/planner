@@ -255,23 +255,6 @@ if archivo:
 
     df_base = df.copy()
 
-    if archivo:
-    df = pd.read_excel(archivo)
-
-    st.subheader("Datos cargados")
-    st.dataframe(df)
-
-    df_base = df.copy()
-
-    # Calcular predicción una sola vez y guardarla
-    if archivo:
-    df = pd.read_excel(archivo)
-
-    st.subheader("Datos cargados")
-    st.dataframe(df)
-
-    df_base = df.copy()
-
     # Calcular predicción una sola vez y guardarla
     if st.button("Predecir"):
 
@@ -349,19 +332,6 @@ if archivo:
         st.dataframe(resultado)
 
         # Excel descargable
-        excel_file = convertir_a_excel(resultado)
-
-        st.download_button(
-            label="📥 Descargar resultados en Excel",
-            data=excel_file,
-            file_name="prediccion_horas.xlsx",
-            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-        )
-
-        st.subheader("Resultado detallado")
-        st.dataframe(resultado)
-
-        # ✅ Excel descargable
         excel_file = convertir_a_excel(resultado)
 
         st.download_button(
