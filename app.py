@@ -257,24 +257,21 @@ if archivo:
 
     if st.button("Predecir"):
 
-        resultado = predecir_por_tareas(df_base, tareas_dict, modelo, df_modelos, df_patrones)
+    st.session_state["resultado"] = predecir_por_tareas(
+        df_base,
+        tareas_dict,
+        modelo,
+        df_modelos,
+        df_patrones
+    )
 
-        
+
+    if "resultado" in st.session_state:
+    
+        resultado = st.session_state["resultado"]
+    
+        st.subheader("Resultado detallado")
         st.dataframe(resultado)
-
-        # ==========================
-        # Filtro de proyectos
-        # ==========================
-
-        st.subheader("Visualización")
-
-        proyectos = sorted(resultado["ACRÓNIMO"].unique())
-
-        proyectos_seleccionados = st.multiselect(
-            "Selecciona los proyectos a visualizar",
-            proyectos,
-            default=proyectos[:1]
-        )
 
         if proyectos_seleccionados:
 
