@@ -74,9 +74,9 @@ def predecir_por_tareas(
 
     df_input = df_input.merge(
         df_modelos[
-            ["FAMILIA", "TAMAÑO", "MODELO_ELEGIDO"]
+            ["FAMILIA", "TAMAÑO", "PLANIFICACIÓN", "MODELO_ELEGIDO"]
         ],
-        on=["FAMILIA", "TAMAÑO"],
+        on=["FAMILIA", "TAMAÑO","PLANIFICACIÓN"],
         how="left"
     )
 
@@ -86,9 +86,9 @@ def predecir_por_tareas(
 
     df_input = df_input.merge(
         df_patrones[
-            ["FAMILIA", "TAMAÑO", "horas_patron"]
+            ["FAMILIA", "TAMAÑO", "PLANIFICACIÓN", "Horas_Patron"]
         ],
-        on=["FAMILIA", "TAMAÑO"],
+        on=["FAMILIA", "TAMAÑO", "PLANIFICACIÓN"],
         how="left"
     )
 
@@ -104,7 +104,7 @@ def predecir_por_tareas(
 
     df_input["horas_predichas"] = np.where(
         df_input["MODELO_ELEGIDO"] == "patron",
-        df_input["horas_patron"],
+        df_input["Horas_Patron"],
         df_input["horas_xgb"]
     )
 
