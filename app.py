@@ -161,8 +161,8 @@ def cargar_df_patrones():
 
 
 modelo = cargar_modelo()
-df_modelos = cargar_df_modelos
-df_patrones = cargar_df_patrones
+df_modelos = cargar_df_modelos()
+df_patrones = cargar_df_patrones()
 
 
 tareas_dict = {
