@@ -8,10 +8,6 @@ st.title("Planner XGBoost")
 archivo = st.file_uploader("Sube tu archivo excel",type=["xlsx","xls"])
 
 
-import pandas as pd
-import numpy as np
-import streamlit as st
-
 
 def predecir_por_tareas(
     df_proyecto_base,
@@ -156,12 +152,12 @@ def cargar_modelo():
 
 @st.cache_data
 def cargar_df_modelos():
-    return pd.read_csv("df_modelos.csv")
+    return pd.read_csv("df_modelos.csv", sep=";")
 
 
 @st.cache_data
 def cargar_df_patrones():
-    return pd.read_csv("df_patrones.csv")
+    return pd.read_csv("df_patrones.csv", sep=";")
 
 
 modelo = cargar_modelo()
