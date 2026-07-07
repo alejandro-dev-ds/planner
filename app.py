@@ -310,21 +310,6 @@ if archivo:
                 use_container_width=True
             )
 
-            # Tabla resumen opcional
-            resumen = (
-                df_graf
-                .pivot_table(
-                    index="PLANIFICACIÓN",
-                    columns="ACRÓNIMO",
-                    values="horas_predichas",
-                    aggfunc="sum"
-                )
-                .fillna(0)
-            )
-
-            st.subheader("Comparativa por tarea")
-            st.dataframe(resumen)
-
         else:
             st.info("Seleccione al menos un proyecto para visualizar.")
 
