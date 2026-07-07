@@ -3,6 +3,7 @@ import pandas as pd
 from io import BytesIO
 import joblib
 import numpy as np
+import plotly.express as px
 
 st.title("Planner XGBoost")
 
@@ -257,6 +258,49 @@ if archivo:
     if st.button("Predecir"):
 
         resultado = predecir_por_tareas(df_base, tareas_dict, modelo, df_modelos, df_patrones)
+
+        
+        st.dataframe(resultado)
+
+        # ==========================
+        # Filtro de proyectos
+        # ==========================
+
+        st.subheader("Visualización")
+
+        proyectos = sorted(resultado["ACRÓNIMO"].unique())
+
+        proyectos_seleccionados = st.multiselect(
+            "Selecciona los proyectos a visualizar",
+            proyectos,
+            default=proyectos[:1]
+        )
+
+        if proyectos_seleccionados:
+
+            df_graf = resultado[
+                resultado["ACRÓNIMO"].isin(proyectos_seleccionados)
+            ].copy()
+
+            fig = px.bar(
+                df_graf,
+                x="PLANIFICACIÓN",
+                y="horas_predichas",
+                color="ACRÓNIMO",
+                barmode="group",
+                title="Horas previstas por tarea",
+                labels={
+                    "PLANIFICACIÓN": "Tarea",
+                    "horas_predichas": "Horas"
+                }
+            )
+
+            fig.update_layout(
+                height=700,
+                xaxis_tickangle=-45
+            )
+
+            st.plotly_chart(fig, use_container_width=True)
 
         st.subheader("Resultado detallado")
         st.dataframe(resultado)
