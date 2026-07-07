@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 from io import BytesIO
 import joblib
+import numpy as np
 
 st.title("Planner XGBoost")
 
@@ -149,15 +150,17 @@ def convertir_a_excel(df):
 def cargar_modelo():
     return joblib.load("modelo_xgboost_planificacion_horas.pkl")
 
-
 @st.cache_data
 def cargar_df_modelos():
-    return pd.read_csv("df_modelos.csv", sep=";")
-
+    df = pd.read_csv("df_modelos.csv", sep=";")
+    df.columns = df.columns.str.strip()
+    return df
 
 @st.cache_data
 def cargar_df_patrones():
-    return pd.read_csv("df_patrones.csv", sep=";")
+    df = pd.read_csv("df_patrones.csv", sep=";")
+    df.columns = df.columns.str.strip()
+    return df
 
 
 modelo = cargar_modelo()
