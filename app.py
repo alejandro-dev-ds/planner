@@ -5,10 +5,23 @@ import joblib
 
 st.title("Planner XGBoost")
 
-def predecir_por_tareas(df_proyecto_base, tareas_dict, modelo_cargado):
+archivo = st.file_uploader("Sube tu archivo excel",type=["xlsx","xls"])
+
+
+import pandas as pd
+import numpy as np
+import streamlit as st
+
+
+def predecir_por_tareas(
+    df_proyecto_base,
+    tareas_dict,
+    modelo_cargado,
+    df_modelos,
+    df_patrones
+):
 
     df_proyecto_base = df_proyecto_base.copy()
-
 
     if "ACRÓNIMO" not in df_proyecto_base.columns:
         st.error("El Excel debe contener la columna 'ACRÓNIMO'")
@@ -16,6 +29,7 @@ def predecir_por_tareas(df_proyecto_base, tareas_dict, modelo_cargado):
 
     filas = []
 
+    # Generar una fila por cada tarea
     for tarea, cat_boq in tareas_dict.items():
         df_temp = df_proyecto_base.copy()
         df_temp["PLANIFICACIÓN"] = tarea
@@ -24,16 +38,22 @@ def predecir_por_tareas(df_proyecto_base, tareas_dict, modelo_cargado):
 
     df_input = pd.concat(filas, ignore_index=True)
 
-    # Predicción
-    horas = modelo_cargado.predict(df_input)
-    df_input["horas_predichas"] = horas
+    # ==========================
+    # Predicción XGBoost
+    # ==========================
 
-    # Regla negocio
+    df_input["horas_xgb"] = modelo_cargado.predict(df_input)
+
+    # ==========================
+    # Reglas de negocio XGBoost
+    # ==========================
+
     condicion_1 = (
-        (df_input["FAMILIA"] == "SKID") &
-        (df_input["cat_boq"] == "BCF Service - Panelling")
+        (df_input["FAMILIA"] == "SKID")
+        & (df_input["cat_boq"] == "BCF Service - Panelling")
     )
-    df_input.loc[condicion_1, "horas_predichas"] = 0
+
+    df_input.loc[condicion_1, "horas_xgb"] = 0
 
     trabajos_mt = [
         "TRANSFORMADOR",
@@ -43,17 +63,75 @@ def predecir_por_tareas(df_proyecto_base, tareas_dict, modelo_cargado):
     ]
 
     condicion_2 = (
-        (df_input["TRANSFORMER"] == "NO") &
-        (df_input["PLANIFICACIÓN"].isin(trabajos_mt))
+        (df_input["TRANSFORMER"] == "NO")
+        & (df_input["PLANIFICACIÓN"].isin(trabajos_mt))
     )
 
-    df_input.loc[condicion_2, "horas_predichas"] = 0
+    df_input.loc[condicion_2, "horas_xgb"] = 0
 
-    # Evitar negativos
-    df_input["horas_predichas"] = df_input["horas_predichas"].clip(lower=0)
+    # Evitar valores negativos
+    df_input["horas_xgb"] = df_input["horas_xgb"].clip(lower=0)
+
+    # ==========================
+    # Selección de modelo
+    # ==========================
+
+    df_input = df_input.merge(
+        df_modelos[
+            ["FAMILIA", "TAMAÑO", "MODELO_ELEGIDO"]
+        ],
+        on=["FAMILIA", "TAMAÑO"],
+        how="left"
+    )
+
+    # ==========================
+    # Horas patrón
+    # ==========================
+
+    df_input = df_input.merge(
+        df_patrones[
+            ["FAMILIA", "TAMAÑO", "horas_patron"]
+        ],
+        on=["FAMILIA", "TAMAÑO"],
+        how="left"
+    )
+
+    # Si no existe decisión, usar XGBoost por defecto
+    df_input["MODELO_ELEGIDO"] = (
+        df_input["MODELO_ELEGIDO"]
+        .fillna("xgboost")
+    )
+
+    # ==========================
+    # Horas finales
+    # ==========================
+
+    df_input["horas_predichas"] = np.where(
+        df_input["MODELO_ELEGIDO"] == "patron",
+        df_input["horas_patron"],
+        df_input["horas_xgb"]
+    )
+
+    df_input["horas_predichas"] = (
+        df_input["horas_predichas"]
+        .fillna(0)
+        .clip(lower=0)
+    )
+
+    # ==========================
+    # Resultado
+    # ==========================
 
     df_resultado = df_input[
-        ["ACRÓNIMO", "PLANIFICACIÓN", "cat_boq", "horas_predichas"]
+        [
+            "ACRÓNIMO",
+            "FAMILIA",
+            "TAMAÑO",
+            "PLANIFICACIÓN",
+            "cat_boq",
+            "MODELO_ELEGIDO",
+            "horas_predichas"
+        ]
     ].copy()
 
     df_resultado = df_resultado.sort_values(
@@ -62,7 +140,7 @@ def predecir_por_tareas(df_proyecto_base, tareas_dict, modelo_cargado):
     )
 
     return df_resultado
-    
+
 def convertir_a_excel(df):
     output = BytesIO()
     with pd.ExcelWriter(output, engine='openpyxl') as writer:
@@ -70,11 +148,25 @@ def convertir_a_excel(df):
     return output.getvalue()
 
 
+
 @st.cache_resource
 def cargar_modelo():
     return joblib.load("modelo_xgboost_planificacion_horas.pkl")
 
+
+@st.cache_data
+def cargar_df_modelos():
+    return pd.read_csv("df_modelos.csv")
+
+
+@st.cache_data
+def cargar_df_patrones():
+    return pd.read_csv("df_patrones.csv")
+
+
 modelo = cargar_modelo()
+df_modelos = cargar_df_modelos
+df_patrones = cargar_df_patrones
 
 
 tareas_dict = {
@@ -155,76 +247,27 @@ tareas_dict = {
 }
 
 
-st.header("📂 Input")
-
-archivo = st.file_uploader("Sube tu archivo Excel", type=["xlsx", "xls"])
-
-# -------------------------
-# EJECUCIÓN CONTROLADA
-# -------------------------
-
 if archivo:
+    df = pd.read_excel(archivo)
 
-    if st.button("🚀 Ejecutar predicción", use_container_width=True):
+    st.subheader("Datos cargados")
+    st.dataframe(df)
 
-        df = pd.read_excel(archivo)
+    df_base = df.copy()
 
-        with st.spinner("Calculando predicciones..."):
-            resultado = predecir_por_tareas(df, tareas_dict, modelo)
+    if st.button("Predecir"):
 
-        # ✅ Guardar resultado en memoria (CLAVE)
-        st.session_state["resultado"] = resultado
+        resultado = predecir_por_tareas(df_base, tareas_dict, modelo, df_modelos, df_patrones)
 
+        st.subheader("Resultado detallado")
+        st.dataframe(resultado)
 
-# -------------------------
-# MOSTRAR RESULTADOS (persistentes)
-# -------------------------
+        # ✅ Excel descargable
+        excel_file = convertir_a_excel(resultado)
 
-if "resultado" in st.session_state:
-
-    resultado = st.session_state["resultado"]
-
-    st.success("✅ Predicción completada")
-
-   
-
-    # ✅ Filtro SIN romper app
-    proyectos = st.multiselect(
-        "Filtrar por proyecto",
-        options=resultado["ACRÓNIMO"].unique()
-    )
-
-    if proyectos:
-        resultado_filtrado = resultado[resultado["ACRÓNIMO"].isin(proyectos)]
-    else:
-        resultado_filtrado = resultado
-
-    # Gráfico
-
-     # KPIs
-    total_horas = resultado_filtrado["horas_predichas"].sum()
-    num_proyectos = resultado_filtrado["ACRÓNIMO"].nunique()
-
-    m1, m2 = st.columns(2)
-    m1.metric("⏱️ Total horas", f"{total_horas:,.0f}")
-    m2.metric("📦 Nº proyectos", num_proyectos)
-    
-    st.subheader("📈 Horas por tarea")
-
-    grafico = resultado_filtrado.groupby("PLANIFICACIÓN")["horas_predichas"].sum()
-    st.bar_chart(grafico)
-
-    # Tabla
-    st.subheader("📋 Detalle")
-    st.dataframe(resultado_filtrado, use_container_width=True, hide_index=True)
-
-    # Excel descarga
-    excel_file = convertir_a_excel(resultado_filtrado)
-
-    st.download_button(
-        label="📥 Descargar resultados en Excel",
-        data=excel_file,
-        file_name="prediccion_horas.xlsx",
-        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        use_container_width=True
-    )
+        st.download_button(
+            label="📥 Descargar resultados en Excel",
+            data=excel_file,
+            file_name="prediccion_horas.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
