@@ -14,7 +14,7 @@ archivo = st.file_uploader("Sube tu archivo excel",type=["xlsx","xls"])
 def predecir_por_tareas(
     df_proyecto_base,
     tareas_dict,
-    fases_dict,
+    fases,
     modelo_cargado,
     df_modelos,
     df_patrones
@@ -172,13 +172,32 @@ def cargar_df_modelos():
 
 @st.cache_data
 def cargar_df_patrones():
-    df = pd.read_csv(
-        "df_patrones.csv",
-        sep=";",
-        encoding="utf-8"
-    )
-    df.columns = df.columns.str.strip()
-    return df
+
+    encodings = [
+        "utf-8",
+        "utf-8-sig",
+        "cp1252",
+        "latin1",
+        "utf-16"
+    ]
+
+    for enc in encodings:
+        try:
+            df = pd.read_csv(
+                "df_patrones.csv",
+                sep=";",
+                encoding=enc
+            )
+
+            st.success(f"Leído con encoding: {enc}")
+
+            df.columns = df.columns.str.strip()
+            return df
+
+        except Exception as e:
+            st.write(f"{enc}: {e}")
+
+    raise Exception("No se pudo leer df_patrones.csv")
 
 modelo = cargar_modelo()
 df_modelos = cargar_df_modelos()
