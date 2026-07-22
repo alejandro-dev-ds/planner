@@ -175,7 +175,7 @@ def cargar_df_patrones():
     df = pd.read_csv(
         "df_patrones.csv",
         sep=";",
-        encoding="latin1"
+        encoding="utf-8"
     )
     df.columns = df.columns.str.strip()
     return df
