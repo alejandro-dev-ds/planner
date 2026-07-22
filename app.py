@@ -172,10 +172,13 @@ def cargar_df_modelos():
 
 @st.cache_data
 def cargar_df_patrones():
-    df = pd.read_csv("df_patrones.csv", sep=";")
+    df = pd.read_csv(
+        "df_patrones.csv",
+        sep=";",
+        encoding="latin1"
+    )
     df.columns = df.columns.str.strip()
     return df
-
 
 modelo = cargar_modelo()
 df_modelos = cargar_df_modelos()
