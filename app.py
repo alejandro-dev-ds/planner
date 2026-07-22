@@ -175,7 +175,11 @@ def cargar_df_patrones():
     df = pd.read_csv(
         "df_patrones.csv",
         sep=";",
+        encoding="cp1252"
     )
+
+    st.write(df.columns.tolist())
+
     return df
 
 modelo = cargar_modelo()
