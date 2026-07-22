@@ -173,24 +173,18 @@ def cargar_df_modelos():
 @st.cache_data
 def cargar_df_patrones():
 
-    for enc in ["cp1252", "latin1", "utf-16"]:
-        try:
-            df = pd.read_csv(
-                "df_patrones.csv",
-                sep=";",
-                encoding=enc
-            )
+    df = pd.read_csv(
+        "df_patrones.csv",
+        sep=";",
+        encoding="cp1252"
+    )
 
-            st.write(f"✅ Leído con {enc}")
+    df.columns = df.columns.str.strip()
 
-            df.columns = df.columns.str.strip()
+    st.write("Columnas df_patrones:")
+    st.write(df.columns.tolist())
 
-            return df
-
-        except Exception as e:
-            st.write(f"❌ {enc}: {e}")
-
-    raise Exception("No se pudo leer df_patrones.csv")
+    return df
 
 modelo = cargar_modelo()
 df_modelos = cargar_df_modelos()
