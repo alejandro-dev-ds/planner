@@ -14,6 +14,7 @@ archivo = st.file_uploader("Sube tu archivo excel",type=["xlsx","xls"])
 def predecir_por_tareas(
     df_proyecto_base,
     tareas_dict,
+    fases_dict,
     modelo_cargado,
     df_modelos,
     df_patrones
@@ -46,9 +47,15 @@ def predecir_por_tareas(
     # Reglas de negocio XGBoost
     # ==========================
 
+    excepciones_skid = [
+        "BCF Service - Panelling",
+        "BCF Service - Fire Supression",
+        "BCF Service - Cooling",
+    ]
+
     condicion_1 = (
         (df_input["FAMILIA"] == "SKID")
-        & (df_input["cat_boq"] == "BCF Service - Panelling")
+        & (df_input["cat_boq"].isin(excepciones_skid))
     )
 
     df_input.loc[condicion_1, "horas_xgb"] = 0
@@ -132,9 +139,15 @@ def predecir_por_tareas(
         ]
     ].copy()
 
+    df_resultado["FASE"] = (
+    df_resultado["PLANIFICACIÓN"]
+    .map(fases)
+    .fillna(999)
+    )
+
     df_resultado = df_resultado.sort_values(
-        ["ACRÓNIMO", "horas_predichas"],
-        ascending=[True, False]
+    ["ACRÓNIMO", "FASE"],
+    ascending=[True, True]
     )
 
     return df_resultado
@@ -246,6 +259,87 @@ tareas_dict = {
     "MANTENIMIENTO": "MANTENIMIENTO"
 }
 
+fases = {
+    "TRABAJOS PREVIOS MECANICOS": 100,
+    "CORTE Y ENSAMBLAJE DE CARRILES Y BANDEJAS": 105,
+    "NIVELACIÓN": 110,
+    "INSTALACIÓN CARRILES DE SOPORTACIÓN": 115,
+    "INSTALACIÓN DE BANDEJAS": 120,
+    "MECANIZADO DE ELEMENTOS DE INSTALACIÓN MECÁNICA": 125,
+    "EQUIPOS": 130,
+    "INTRODUCCIÓN/FIJACIÓN de EQUIPOS": 131,
+    "ENSAMBLAJE DE CUADROS CUADRISTA": 132,
+    "ENSAMBLAJE DE EQUIPOS (CUADRO PRINCIPAL Y UPS)": 133,
+    "CADENAS PORTACABLES": 134,
+    "INSTALACIÓN DE SUELO (A consultar)": 135,
+    "PANELADO": 140,
+    "MODIFICACIONES EN PANEL": 145,
+    "R-QP05-12 Pre-Installation of doors": 146,
+    "INSTALACIÓN DE PUERTAS": 147,
+    "INSTALACIÓN ROXTEC": 148,
+    "INSTALACIÓN DE ELEMENTOS y/o EQUIPOS": 149,
+    "CERRAMIENTO DE ALUMINIO": 150,
+    "PERFILERÍA EXTERIOR": 155,
+    "R-QP05-28 Prefabricated Module Roof Inspection": 160,
+    "CORTE Y/O PREPARACIÓN DE CABLE": 165,
+    "MECANIZADO DE ELEMENTOS DE INSTALACIÓN ELÉCTRICA": 170,
+    "SISTEMA DE TIERRAS": 175,
+    "SISTEMA DE ILUMINACIÓN/EMERGENCIAS": 180,
+    "CABLEADO Y CONEXIONADO POTENCIA": 185,
+    "INSTALACIÓN DE CABLE": 186,
+    "CONEXIONADO DE EQUIPOS": 187,
+    "ETIQUETADO DE CABLE Y EQUIPOS": 188,
+    "INSTALACIÓN DE MEDIA TENSION": 190,
+    "TRANSFORMADOR": 191,
+    "TRABAJOS DE MEDIA TENSIÓN": 192,
+    "TRABAJOS DE BT EN MT": 193,
+    "PRUEBAS DE MEDIA TENSIÓN": 194,
+    "SISTEMA DE MONITORIZACIÓN": 195,
+    "MONTAJE DE EQUIPOS DE MONITORIZACIÓN": 196,
+    "INSTALACIÓN DE SEÑALES": 197,
+    "INSTALACIÓN DE UTP": 198,
+    "R-QP05-16 Acceptance of Installations. Monitoring": 199,
+    "CONTROL DE ACCESO": 200,
+    "PRUEBAS ELÉCTRICAS PRODUCCIÓN": 205,
+    "RECOLECCIÓN DE NÚMEROS DE SERIE": 206,
+    "PRUEBAS ELECTRICAS SIN TENSIÓN": 207,
+    "TORQUEO": 208,
+    "R-QP05-11 Acceptance of Installations. Electrical": 209,
+    "R-QP05-40 Acceptance of Torque": 210,
+    "R-QP07-08 BCF Factory Power Energization Authorization": 211,
+    "PRUEBAS ELECTRICAS CON TENSIÓN": 212,
+    "SOPORTE A COMMISSIONING": 213,
+    "TRABAJOS DE INSTALACIÓN PCI": 215,
+    "REALIZACIÓN DE PRUEBAS PCI": 220,
+    "R-QP05-27 Door Fan Test": 221,
+    "R-QP05-04 Acceptance of Installations. FSS": 222,
+    "R-QP05-18 Acceptance of Installations. Assembly": 223,
+    "MONTAJE DE TUBERÍAS": 225,
+    "TRABAJOS DE CONEXIONADO Y VALVULERIA": 230,
+    "TRABAJOS DE FORRADO DE TUBERÍAS": 235,
+    "REALIZACIÓN DE PRUEBAS COOLING": 240,
+    "R-QP05-05 Acceptance of Installations. Cooling": 241,
+    "TRASLADO Y UBICACIÓN EN ZONA CX": 245,
+    "TESTEO Cx": 250,
+    "UPS START UP": 255,
+    "FAT/FOK/Witness test": 260,
+    "TRASLADO Y UBICACIÓN EN ZONA PRODUCCIÓN.": 265,
+    "MODIFICACIONES FAT/FOK/WITNESS TEST": 270,
+    "R-QP05-03 QC 100% MDC": 271,
+    "DESENSAMBLAJE INSTALACIÓN ELÉCTRICA": 275,
+    "DESENSAMBLAJE INSTALACIÓN MECÁNICA": 280,
+    "LIMPIEZA FINAL CUADROS": 285,
+    "R-QP05-29 Outgoing electrical panel visual inspection": 286,
+    "CIERRE DE CUADROS Y PENDIENTES ELÉCTRICOS": 290,
+    "CIERRE DE CUADROS Y PENDIENTES MECÁNICOS": 295,
+    "LIMPIEZA FINAL": 300,
+    "REPASOS PINTURA": 305,
+    "R-QP05-02 Pre Shipment Inspection MDC": 306,
+    "R-QP05-24 Authorization for the release of the solutions": 307,
+    "EMBALAJE": 310,
+    "CARGA": 315
+}
+
 
 if archivo:
     df = pd.read_excel(archivo)
@@ -261,6 +355,7 @@ if archivo:
         st.session_state["resultado"] = predecir_por_tareas(
             df_base,
             tareas_dict,
+            fases,
             modelo,
             df_modelos,
             df_patrones
@@ -309,6 +404,21 @@ if archivo:
                 fig,
                 use_container_width=True
             )
+
+            # Tabla resumen opcional
+            resumen = (
+                df_graf
+                .pivot_table(
+                    index="PLANIFICACIÓN",
+                    columns="ACRÓNIMO",
+                    values="horas_predichas",
+                    aggfunc="sum"
+                )
+                .fillna(0)
+            )
+
+            st.subheader("Comparativa por tarea")
+            st.dataframe(resumen)
 
         else:
             st.info("Seleccione al menos un proyecto para visualizar.")
