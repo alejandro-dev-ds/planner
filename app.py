@@ -124,6 +124,45 @@ def predecir_por_tareas(
     )
 
     # ==========================
+    # Tareas Quality fijas
+    # ==========================
+
+    tareas_qc = {
+        "1981-ForQ-en-002 QC incoming inspection of NON-ISO modules": 1.5,
+        "1981-ForQ-en-005 Incoming inspection of Base Design": 2,
+        "1981-ForQ-en-006 QC Pre-instalation of doors": 0.25,
+        "1981-ForQ-en-003 Incoming inspection of electrical panels": 1,
+        "1981-ForQ-en-001 Incoming Inspection of HV Cells": 0.5,
+        "1981-ForQ-en-004 Incoming-inspection-HV-MV-Transformer": 0.5,
+        "1981-ForQ-en-007 Acceptance of Installations. Assembly": 1.5,
+        "1981-ForQ-en-008 Acceptance of installations MDC. Roof Sealing": 0.5,
+        "1981-ForQ-en-011 Acceptance of Installations. FSS": 1,
+        "1981-ForQ-en-013 Acceptance of Installations. Cooling": 1,
+        "1981-ForQ-en-010 Acceptance of Installations. Electrical": 2.5,
+        "1981-ForQ-en-012 Acceptance of torque": 2,
+        "1981-ForQ-en-016 Acceptance of installations. Monitoring": 0.75,
+        "1981-ForQ-en-015 Door Fan Test": 0.75,
+        "1981-ForQ-en-018 QC 100% MDC": 1,
+        "1981-ForQ-en-028 Surface damage": 0.5,
+        "1981-ForQ-en-017 Outgoing electrical panel visual inspection": 0.75,
+        "1981-ForQ-en-020 Pre Shipment inspection MDC": 2,
+        "1981-ForQ-en-019 Authorization for the release of the solutions": 0.5,
+    }
+
+    filas_qc = []
+
+    for tarea, horas in tareas_qc.items():
+        df_temp = df_proyecto_base.copy()
+        df_temp["PLANIFICACIÓN"] = tarea
+        df_temp["cat_boq"] = "QC"
+        df_temp["horas_fijas"] = horas
+        filas_qc.append(df_temp)
+
+    df_qc = pd.concat(filas_qc, ignore_index=True)
+
+    df_input = pd.concat([df_input, df_qc], ignore_index=True)
+
+    # ==========================
     # Resultado
     # ==========================
 
