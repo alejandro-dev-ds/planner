@@ -10,7 +10,6 @@ st.title("Planner XGBoost")
 archivo = st.file_uploader("Sube tu archivo excel",type=["xlsx","xls"])
 
 
-
 def predecir_por_tareas(
     df_proyecto_base,
     tareas_dict,
@@ -85,7 +84,7 @@ def predecir_por_tareas(
         df_modelos[
             ["FAMILIA", "TAMAÑO", "PLANIFICACIÓN", "MODELO_ELEGIDO"]
         ],
-        on=["FAMILIA", "TAMAÑO","PLANIFICACIÓN"],
+        on=["FAMILIA", "TAMAÑO", "PLANIFICACIÓN"],
         how="left"
     )
 
@@ -155,12 +154,17 @@ def predecir_por_tareas(
         df_temp = df_proyecto_base.copy()
         df_temp["PLANIFICACIÓN"] = tarea
         df_temp["cat_boq"] = "QC"
-        df_temp["horas_fijas"] = horas
+        df_temp["MODELO_ELEGIDO"] = "fijo"
+        df_temp["horas_predichas"] = horas
         filas_qc.append(df_temp)
 
     df_qc = pd.concat(filas_qc, ignore_index=True)
 
-    df_input = pd.concat([df_input, df_qc], ignore_index=True)
+    df_input = pd.concat(
+        [df_input, df_qc],
+        ignore_index=True,
+        sort=False
+    )
 
     # ==========================
     # Resultado
@@ -179,14 +183,14 @@ def predecir_por_tareas(
     ].copy()
 
     df_resultado["FASE"] = (
-    df_resultado["PLANIFICACIÓN"]
-    .map(fases)
-    .fillna(999)
+        df_resultado["PLANIFICACIÓN"]
+        .map(fases)
+        .fillna(999)
     )
 
     df_resultado = df_resultado.sort_values(
-    ["ACRÓNIMO", "FASE"],
-    ascending=[True, True]
+        ["ACRÓNIMO", "FASE"],
+        ascending=[True, True]
     )
 
     return df_resultado
