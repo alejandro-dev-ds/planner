@@ -394,7 +394,6 @@ if archivo:
     df = pd.read_excel(archivo)
 
     st.subheader("Datos cargados")
-    st.dataframe(df)
 
     df_base = df.copy()
 
