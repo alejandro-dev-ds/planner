@@ -127,25 +127,28 @@ def predecir_por_tareas(
     # ==========================
 
     tareas_qc = {
-        "1981-ForQ-en-002 QC incoming inspection of NON-ISO modules": 1.5,
-        "1981-ForQ-en-005 Incoming inspection of Base Design": 2,
-        "1981-ForQ-en-006 QC Pre-instalation of doors": 0.25,
-        "1981-ForQ-en-003 Incoming inspection of electrical panels": 1,
-        "1981-ForQ-en-001 Incoming Inspection of HV Cells": 0.5,
-        "1981-ForQ-en-004 Incoming-inspection-HV-MV-Transformer": 0.5,
-        "1981-ForQ-en-007 Acceptance of Installations. Assembly": 1.5,
-        "1981-ForQ-en-008 Acceptance of installations MDC. Roof Sealing": 0.5,
-        "1981-ForQ-en-011 Acceptance of Installations. FSS": 1,
-        "1981-ForQ-en-013 Acceptance of Installations. Cooling": 1,
-        "1981-ForQ-en-010 Acceptance of Installations. Electrical": 2.5,
-        "1981-ForQ-en-012 Acceptance of torque": 2,
-        "1981-ForQ-en-016 Acceptance of installations. Monitoring": 0.75,
-        "1981-ForQ-en-015 Door Fan Test": 0.75,
-        "1981-ForQ-en-018 QC 100% MDC": 1,
-        "1981-ForQ-en-028 Surface damage": 0.5,
-        "1981-ForQ-en-017 Outgoing electrical panel visual inspection": 0.75,
-        "1981-ForQ-en-020 Pre Shipment inspection MDC": 2,
-        "1981-ForQ-en-019 Authorization for the release of the solutions": 0.5,
+    "1981-ForQ-en-002 QC incoming inspection of NON-ISO modules": 1.5,
+    "1981-ForQ-en-005 Incoming inspection of Base Design": 2,
+    "1981-ForQ-en-006 QC Pre-instalation of doors": 0.25,
+    "1981-ForQ-en-003 Incoming inspection of electrical panels": 1,
+    "1981-ForQ-en-001 Incoming Inspection of HV Cells": 0.5,
+    "1981-ForQ-en-004 Incoming-inspection-HV-MV-Transformer": 0.5,
+    "1981-ForQ-en-009 Special Installations": None,
+    "1981-ForQ-en-007 Acceptance of Installations. Assembly": 1.5,
+    "1981-ForQ-en-008 Acceptance of installations MDC. Roof Sealing": 0.5,
+    "1981-ForQ-en-011 Acceptance of Installations. FSS": 1,
+    "1981-ForQ-en-013 Acceptance of Installations. Cooling": 1,
+    "1981-ForQ-en-010 Acceptance of Installations. Electrical": 2.5,
+    "1981-ForQ-en-012 Acceptance of torque": 2,
+    "1981-ForQ-en-016 Acceptance of installations. Monitoring": 0.75,
+    "1981-ForQ-en-014 Acceptance of installations: Networking": None,
+    "1981-ForQ-en-015 Door Fan Test": 0.75,
+    "1981-ForQ-en-018 QC 100% MDC": 1,
+    "1981-ForQ-en-028 Surface damage": 0.5,
+    "1981-ForQ-en-017 Outgoing electrical panel visual inspection": 0.75,
+    "1981-ForQ-en-020 Pre Shipment inspection MDC": 2,
+    "1981-ForQ-en-019 Authorization for the release of the solutions": 0.5,
+    "R-QP07-08 BCF Factory Power Energization Authorization":0
     }
 
     filas_qc = []
@@ -155,8 +158,13 @@ def predecir_por_tareas(
         df_temp["PLANIFICACIÓN"] = tarea
         df_temp["cat_boq"] = "QC"
         df_temp["MODELO_ELEGIDO"] = "fijo"
-        df_temp["horas_predichas"] = horas
-        filas_qc.append(df_temp)
+
+        if tarea == "1981-ForQ-en-006 QC Pre-instalation of doors":
+            df_temp["horas_predichas"] = 0.25 * df_temp["NUM_DOORS"]
+        else:
+            df_temp["horas_predichas"] = horas
+
+    filas_qc.append(df_temp)
 
     df_qc = pd.concat(filas_qc, ignore_index=True)
 
@@ -193,6 +201,8 @@ def predecir_por_tareas(
         ascending=[True, True]
     )
 
+    df_resultado = df_resultado.drop(columns=["FASE"])
+
     return df_resultado
 
 def convertir_a_excel(df):
@@ -220,6 +230,7 @@ def cargar_df_patrones():
         sep=";",
         encoding="cp1252"
     )
+
     return df
 
 modelo = cargar_modelo()
@@ -299,9 +310,6 @@ tareas_dict = {
 
     # PANELLING
     "PANELADO": "BCF Service - Panelling",
-
-    # MANTENIMIENTO
-    "MANTENIMIENTO": "MANTENIMIENTO"
 }
 
 fases = {
@@ -319,13 +327,13 @@ fases = {
     "INSTALACION DE SUELO": 135,
     "PANELADO": 140,
     "MODIFICACIONES EN PANEL": 145,
-    "R-QP05-12 Pre-Installation of doors": 146,
+    "1981-ForQ-en-006 QC Pre-instalation of doors": 146,
     "INSTALACION DE PUERTAS": 147,
     "INSTALACION ROXTEC": 148,
     "INSTALACION DE ELEMENTOS Y/O EQUIPOS": 149,
     "CERRAMIENTO DE ALUMINIO": 150,
     "PERFILERIA EXTERIOR": 155,
-    "R-QP05-28 Prefabricated Module Roof Inspection": 160,
+    "1981-ForQ-en-008 Acceptance of installations MDC. Roof Sealing": 160,
     "CORTE Y/O PREPARACION DE CABLE": 165,
     "MECANIZADO DE ELEMENTOS DE INSTALACION ELECTRICA": 170,
     "SISTEMA DE TIERRAS": 175,
@@ -343,47 +351,46 @@ fases = {
     "MONTAJE DE EQUIPOS DE MONITORIZACION": 196,
     "INSTALACION DE SENALES": 197,
     "INSTALACION DE UTP": 198,
-    "R-QP05-16 Acceptance of Installations. Monitoring": 199,
+    "1981-ForQ-en-016 Acceptance of installations. Monitoring": 199,
     "CONTROL DE ACCESO": 200,
     "PRUEBAS ELECTRICAS PRODUCCION": 205,
     "RECOLECCIÓN DE NUMEROS DE SERIE": 206,
     "PRUEBAS ELECTRICAS SIN TENSION": 207,
     "TORQUEO": 208,
-    "R-QP05-11 Acceptance of Installations. Electrical": 209,
-    "R-QP05-40 Acceptance of Torque": 210,
+    "1981-ForQ-en-010 Acceptance of Installations. Electrical": 209,
+    "1981-ForQ-en-012 Acceptance of torque": 210,
     "R-QP07-08 BCF Factory Power Energization Authorization": 211,
     "PRUEBAS ELECTRICAS CON TENSION": 212,
     "SOPORTE A COMMISSIONING": 213,
     "TRABAJOS DE INSTALACION PCI": 215,
     "REALIZACION DE PRUEBAS PCI": 220,
-    "R-QP05-27 Door Fan Test": 221,
-    "R-QP05-04 Acceptance of Installations. FSS": 222,
-    "R-QP05-18 Acceptance of Installations. Assembly": 223,
+    "1981-ForQ-en-015 Door Fan Test": 221,
+    "1981-ForQ-en-011 Acceptance of Installations. FSS": 222,
+    "1981-ForQ-en-007 Acceptance of Installations. Assembly": 223,
     "MONTAJE DE TUBERIAS": 225,
     "TRABAJOS DE CONEXIONADO Y VALVULERIA": 230,
     "TRABAJOS DE FORRADO DE TUBERIAS": 235,
     "REALIZACION DE PRUEBAS COOLING": 240,
-    "R-QP05-05 Acceptance of Installations. Cooling": 241,
+    "1981-ForQ-en-013 Acceptance of Installations. Cooling": 241,
     "TRASLADO Y UBICACION EN ZONA CX": 245,
     "TESTEO Cx": 250,
     "UPS START UP": 255,
     "FAT/FOK/Witness test": 260,
     "TRASLADO Y UBICACION EN ZONA PRODUCCION.": 265,
     "MODIFICACIONES FAT/FOK/WITNESS TEST": 270,
-    "R-QP05-03 QC 100% MDC": 271,
+    "1981-ForQ-en-018 QC 100% MDC": 271,
     "DESENSAMBLAJE INSTALACION ELECTRICA": 275,
     "DESENSAMBLAJE INSTALACION MECANICA": 280,
     "LIMPIEZA FINAL CUADROS": 285,
-    "R-QP05-29 Outgoing electrical panel visual inspection": 286,
+    "1981-ForQ-en-017 Outgoing electrical panel visual inspection": 286,
     "CIERRE DE CUADROS Y PENDIENTES ELECTRICOS": 290,
     "CIERRE DE CUADROS Y PENDIENTES MECANICOS": 295,
     "LIMPIEZA FINAL": 300,
     "REPASOS DE PINTURA": 305,
-    "R-QP05-02 Pre Shipment Inspection MDC": 306,
-    "R-QP05-24 Authorization for the release of the solutions": 307,
+    "1981-ForQ-en-020 Pre Shipment inspection MDC": 306,
+    "1981-ForQ-en-019 Authorization for the release of the solutions": 307,
     "EMBALAJE": 310,
     "CARGA": 315,
-    "MANTENIMIENTO": 9999
 }
 
 
