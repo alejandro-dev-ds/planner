@@ -220,9 +220,6 @@ def cargar_df_patrones():
         sep=";",
         encoding="cp1252"
     )
-
-    st.write(df.columns.tolist())
-
     return df
 
 modelo = cargar_modelo()
@@ -392,6 +389,9 @@ fases = {
 
 if archivo:
     df = pd.read_excel(archivo)
+
+    st.subheader("Datos cargados")
+    st.dataframe(df)
 
     df_base = df.copy()
 
