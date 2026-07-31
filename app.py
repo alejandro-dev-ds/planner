@@ -393,8 +393,6 @@ fases = {
 if archivo:
     df = pd.read_excel(archivo)
 
-    st.subheader("Datos cargados")
-
     df_base = df.copy()
 
     # Calcular predicción una sola vez y guardarla
