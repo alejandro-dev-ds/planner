@@ -153,18 +153,18 @@ def predecir_por_tareas(
 
     filas_qc = []
 
-    for tarea, horas in tareas_qc.items():
-        df_temp = df_proyecto_base.copy()
-        df_temp["PLANIFICACIÓN"] = tarea
-        df_temp["cat_boq"] = "QC"
-        df_temp["MODELO_ELEGIDO"] = "fijo"
+for tarea, horas in tareas_qc.items():
+    df_temp = df_proyecto_base.copy()
+    df_temp["PLANIFICACIÓN"] = tarea
+    df_temp["cat_boq"] = "QC"
+    df_temp["MODELO_ELEGIDO"] = "fijo"
 
-        if tarea == "1981-ForQ-en-006 QC Pre-instalation of doors":
-            df_temp["horas_predichas"] = 0.25 * df_temp["NUM_DOORS"]
-        else:
-            df_temp["horas_predichas"] = horas
+    if tarea == "1981-ForQ-en-006 QC Pre-instalation of doors":
+        df_temp["horas_predichas"] = 0.25 * df_temp["NUM_DOORS"]
+    else:
+        df_temp["horas_predichas"] = horas
 
-    filas_qc.append(df_temp)
+    filas_qc.append(df_temp)   
 
     df_qc = pd.concat(filas_qc, ignore_index=True)
 
