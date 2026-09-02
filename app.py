@@ -127,13 +127,7 @@ def predecir_por_tareas(
     # ==========================
 
     tareas_qc = {
-    "1981-ForQ-en-002 QC incoming inspection of NON-ISO modules": 1.5,
-    "1981-ForQ-en-005 Incoming inspection of Base Design": 2,
     "1981-ForQ-en-006 QC Pre-instalation of doors": 0.25,
-    "1981-ForQ-en-003 Incoming inspection of electrical panels": 1,
-    "1981-ForQ-en-001 Incoming Inspection of HV Cells": 0.5,
-    "1981-ForQ-en-004 Incoming-inspection-HV-MV-Transformer": 0.5,
-    "1981-ForQ-en-009 Special Installations": None,
     "1981-ForQ-en-007 Acceptance of Installations. Assembly": 1.5,
     "1981-ForQ-en-008 Acceptance of installations MDC. Roof Sealing": 0.5,
     "1981-ForQ-en-011 Acceptance of Installations. FSS": 1,
@@ -141,10 +135,8 @@ def predecir_por_tareas(
     "1981-ForQ-en-010 Acceptance of Installations. Electrical": 2.5,
     "1981-ForQ-en-012 Acceptance of torque": 2,
     "1981-ForQ-en-016 Acceptance of installations. Monitoring": 0.75,
-    "1981-ForQ-en-014 Acceptance of installations: Networking": None,
     "1981-ForQ-en-015 Door Fan Test": 0.75,
     "1981-ForQ-en-018 QC 100% MDC": 1,
-    "1981-ForQ-en-028 Surface damage": 0.5,
     "1981-ForQ-en-017 Outgoing electrical panel visual inspection": 0.75,
     "1981-ForQ-en-020 Pre Shipment inspection MDC": 2,
     "1981-ForQ-en-019 Authorization for the release of the solutions": 0.5,
